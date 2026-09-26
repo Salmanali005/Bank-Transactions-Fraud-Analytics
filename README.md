@@ -4,8 +4,8 @@ An end-to-end data engineering project built on Apache Spark, following the Meda
 
 ## Team
 
-- Salman Ali
-- Ahmad Khan
+- Salman Ali 24L2542
+- Ahmad Khan 24L2541
 
 **Course:** Data Analysis and Visualization — Semester 5
 
