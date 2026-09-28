@@ -1,58 +1,47 @@
-# Bank Transaction Analytics — Fraud & Spend Insights Lakehouse
+# Bank Transaction Analytics: Fraud Detection & Spending Insights Lakehouse
 
-An end-to-end data engineering project built on Apache Spark, following the Medallion (Bronze–Silver–Gold) Architecture, to analyze bank transaction data for spend behavior and fraud pattern insights.
+An end-to-end data lakehouse pipeline built on Apache Spark and Delta Lake using the Medallion Architecture (Bronze, Silver, Gold) to ingest financial transactions, detect fraudulent activity patterns, and serve dimensional models to Power BI.
 
-## Team
-
-- Salman Ali
-- Ahmad Khan
-
-**Course:** Data Analysis and Visualization — Semester 5
+---
 
 ## Project Overview
 
-This project simulates the data engineering workflow of a retail bank's transaction monitoring and analytics team. Raw transaction data is ingested, cleansed, and modeled through a Lakehouse pipeline to produce business-ready tables for spend analysis and fraud rate monitoring.
+* **Domain:** Financial Technology / Transaction Monitoring & Fraud Analytics
+* **Platform Stack:** Databricks (Apache Spark), Delta Lake, Python / PySpark, Power BI
+* **Course:** Data Analysis and Visualization — Semester Project (Phase 1)
+* **Project Team:**
+  * **Salman Ali** — Roll Number: `24L2542`
+  * **Ahmad Khan** — Roll Number: `24L2541`
 
-**Domain:** Banking / Fintech
-**Platform:** Databricks Community Edition (Apache Spark)
-**Dashboarding:** Power BI
+---
 
-## Data Source
+## Architecture: Medallion Pipeline
 
-We use the **PaySim** synthetic mobile-money transaction dataset (Kaggle), which mirrors the structure of real banking transaction data without exposing any actual customer information.
+The lakehouse pipeline processes transactional data across three distinct tiers:
 
-- **Full Load:** A large historical batch of transactions, ingested once to seed the Bronze layer.
-- **Incremental Load:** Smaller batches of new transactions, simulating periodic (daily) data arrival from a live banking system.
-
-Sample data files for both load types are available in `data/samples/`.
-
-## Repository Structure
-
-```
-├── README.md
-├── docs/
-│   └── Phase1_Project_Proposal.docx
-├── data/
-│   └── samples/
-│       ├── full_load_sample.csv
-│       └── incremental_load_sample.csv
-└── Fraud-Analytics
-```
-
-## Architecture
-
-The pipeline follows the Medallion Architecture:
-
-- **Bronze:** Raw transaction data ingested as-is, with metadata added for traceability.
-- **Silver:** Cleansed and standardized data — type casting, deduplication, and PII handling (hashing of account identifiers).
-- **Gold:** Business-ready dimensional model (fact and dimension tables) supporting spend and fraud analytics.
-
-Full details are documented in `docs/Phase1_Project_Proposal.docx`.
-
-## Security & Compliance
-
-Account identifiers and other sensitive fields are hashed or masked before reaching the Silver layer. No raw personally identifiable information is retained beyond the Bronze layer. See the proposal document for the complete handling strategy.
-
-## Project Status
-
-This repository currently reflects **Phase 1** of the project: domain and data source definition, sample data, and high-level architecture planning. Pipeline notebooks and dashboard implementation will follow in later phases.
+```text
+       Raw Data (PaySim CSV)
+                 │
+                 ▼
+┌───────────────────────────────────┐
+│     Bronze Layer (Delta Lake)     │  <-- Raw Ingestion + Audit Metadata
+│  - Ingestion Timestamp            │      (ingestion_timestamp, source_batch_id)
+│  - Batch Tracking                 │
+└─────────────────┬─────────────────┘
+                  │
+                  ▼
+┌───────────────────────────────────┐
+│     Silver Layer (Delta Lake)     │  <-- Cleansed, Deduplicated & Sanitized
+│  - DecimalType(18,2) Casting      │  - Malformed Record Quarantine
+│  - ISO UTC Timestamp Parsing      │  - Cryptographic Salted Hashing (SHA-256)
+└─────────────────┬─────────────────┘
+                  │
+                  ▼
+┌───────────────────────────────────┐
+│      Gold Layer (Star Schema)     │  <-- Analytics & Business Intelligence
+│  - fact_transaction               │  - dim_customer, dim_merchant, dim_date
+│  - agg_fraud_rate                 │  - agg_monthly_spend
+└─────────────────┬─────────────────┘
+                  │
+                  ▼
+         Power BI Dashboards
